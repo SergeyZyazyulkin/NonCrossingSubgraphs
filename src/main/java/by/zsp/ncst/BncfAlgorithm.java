@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 @Immutable
-public interface BncsgAlgorithm<V> {
+public interface BncfAlgorithm<V> {
 
-    Optional<Graph<V>> findBncsg(final @NotNull Graph<V> graph) throws AlgorithmException;
+    @NotNull Graph<V> findBncf(final @NotNull Graph<V> graph) throws AlgorithmException;
 }

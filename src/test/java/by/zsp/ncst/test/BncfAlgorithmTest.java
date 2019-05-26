@@ -1,43 +1,41 @@
 package by.zsp.ncst.test;
 
-import by.zsp.ncst.NcstAlgorithm;
+import by.zsp.ncst.BncfAlgorithm;
 import by.zsp.ncst.graph.Graph;
 import by.zsp.ncst.graph.impl.UndirectedGraphWithIntersections;
-import by.zsp.ncst.impl.NcstAlgorithmImpl;
+import by.zsp.ncst.impl.BncfAlgorithmImpl;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Optional;
-
-public class NcstAlgorithmTest {
+public class BncfAlgorithmTest {
 
     private @NotNull Graph<Integer> graph;
-    private @NotNull NcstAlgorithm<Integer> ncstAlgorithm;
+    private @NotNull BncfAlgorithm<Integer> bncfAlgorithm;
 
     @Before
     public void init() {
         graph = new UndirectedGraphWithIntersections<>();
-        ncstAlgorithm = new NcstAlgorithmImpl<>();
+        bncfAlgorithm = new BncfAlgorithmImpl<>();
     }
 
     @Test
     public void testEmpty() {
-        test(true);
+        test(0);
     }
 
     @Test
     public void testSingleVertex() {
         graph.addVertex(1, 1, 1);
-        test(true);
+        test(0);
     }
 
     @Test
     public void testNotConnected() {
         graph.addEdge(1, 1, 1, 2, 2, 2);
         graph.addVertex(3, 3, 3);
-        test(false);
+        test(1);
     }
 
     @Test
@@ -46,7 +44,7 @@ public class NcstAlgorithmTest {
         graph.addEdge(1, 0, 0, 3, 0, 1);
         graph.addEdge(1, 0, 0, 4, 1, 0);
         graph.addEdge(1, 0, 0, 5, 0, -1);
-        test(true);
+        test(4);
     }
 
     @Test
@@ -55,7 +53,7 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, -1, 1, 3, 1, 1);
         graph.addEdge(3, 1, 1, 4, 1, -1);
         graph.addEdge(4, 1, -1, 1, -1, -1);
-        test(true);
+        test(3);
     }
 
     @Test
@@ -64,7 +62,7 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, 0, 1, 3, 1, 0);
         graph.addEdge(3, 1, 0, 4, 1, 1);
         graph.addEdge(4, 1, 1, 5, 2, 1);
-        test(false);
+        test(3);
     }
 
     @Test
@@ -74,7 +72,7 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, 0, 1, 3, 1, 0);
         graph.addEdge(3, 1, 0, 4, 1, 1);
         graph.addEdge(4, 1, 1, 5, 2, 1);
-        test(true);
+        test(4);
     }
 
     @Test
@@ -84,7 +82,7 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, 0, 1, 3, 1, 0);
         graph.addEdge(3, 1, 0, 4, 1, 1);
         graph.addEdge(4, 1, 1, 5, 2, 1);
-        test(false);
+        test(3);
     }
 
     @Test
@@ -95,7 +93,7 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, 0, 1, 3, 1, 0);
         graph.addEdge(3, 1, 0, 4, 1, 1);
         graph.addEdge(4, 1, 1, 5, 2, 1);
-        test(true);
+        test(4);
     }
 
     @Test
@@ -114,7 +112,7 @@ public class NcstAlgorithmTest {
         graph.addEdge(8, 4, 2, 9, 4, -2);
         graph.addEdge(9, 4, -2, 10, 5, -2);
         graph.addEdge(10, 5, -2, 2, 5, 0);
-        test(true);
+        test(12);
     }
 
     @Test
@@ -132,41 +130,25 @@ public class NcstAlgorithmTest {
         graph.addEdge(8, 4, 2, 9, 4, -2);
         graph.addEdge(9, 4, -2, 10, 5, -2);
         graph.addEdge(10, 5, -2, 2, 5, 0);
-        test(false);
+        test(11);
     }
 
     @Test
     public void testRandomGraph() {
-        TestUtils.generateRandomGraph(graph, 30, 150);
+        TestUtils.generateRandomGraph(graph, 40, 100);
         test();
     }
 
     private void test() {
         System.out.println("Intersection index: " + graph.getIntersectionIndex());
-        final Optional<Graph<Integer>> optionalNcst = ncstAlgorithm.findNcst(graph);
-        System.out.println(optionalNcst.isPresent());
-
-        if (optionalNcst.isPresent()) {
-            check(optionalNcst);
-        }
+        final Graph<Integer> bncsg = bncfAlgorithm.findBncf(graph);
+        Assert.assertFalse(bncsg.isIntersecting());
+        System.out.println("BNCSG size: " + bncsg.getEdgesNumber());
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    private void test(final boolean hasNcst) {
-        final Optional<Graph<Integer>> optionalNcst = ncstAlgorithm.findNcst(graph);
-        Assert.assertEquals(hasNcst, optionalNcst.isPresent());
-
-        if (hasNcst) {
-            check(optionalNcst);
-        }
-    }
-
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private void check(final @NotNull Optional<Graph<Integer>> optionalNcst) {
-        final Graph<Integer> ncst = optionalNcst.get();
-        Assert.assertEquals(graph.getVerticesNumber(), ncst.getVerticesNumber());
-        Assert.assertEquals(Math.max(graph.getVerticesNumber() - 1, 0), ncst.getEdgesNumber());
-        Assert.assertTrue(ncst.isConnected());
-        Assert.assertFalse(ncst.isIntersecting());
+    private void test(final int size) {
+        final Graph<Integer> bncsg = bncfAlgorithm.findBncf(graph);
+        Assert.assertFalse(bncsg.isIntersecting());
+        Assert.assertEquals(size, bncsg.getEdgesNumber());
     }
 }

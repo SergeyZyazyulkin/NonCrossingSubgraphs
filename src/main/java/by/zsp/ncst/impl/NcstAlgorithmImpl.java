@@ -12,9 +12,13 @@ import by.zsp.ncst.matroid.algorithm.MatroidIntersectionAlgorithm;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public final class NcstAlgorithmImpl<V> extends BaseSearchTreeAlgorithm implements NcstAlgorithm<V> {
 
@@ -50,7 +54,7 @@ public final class NcstAlgorithmImpl<V> extends BaseSearchTreeAlgorithm implemen
         }
 
         @Override
-        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        @SuppressWarnings({ "OptionalGetWithoutIsPresent", "Duplicates" })
         protected @NotNull Optional<Graph<V>> _compute() {
             if (graph.getVerticesNumber() <= 1) {
                 logNode(String.format("vertices number = %d", graph.getVerticesNumber()), true, depth, index);
@@ -81,30 +85,34 @@ public final class NcstAlgorithmImpl<V> extends BaseSearchTreeAlgorithm implemen
                     return Optional.empty();
                 }
             } else {
-                final Optional<Edge<V>> optionalBridge = graph.findBridge();
+                final List<Edge<V>> bridges = graph.findBridges();
 
-                if (optionalBridge.isPresent()) {
-                    final Edge<V> bridge = optionalBridge.get();
+                if (!bridges.isEmpty()) {
                     final Graph<V> graphCopy = graph.copy();
-                    graphCopy.removeIntersecting(bridge);
-                    final boolean removed = graphCopy.removeEdge(bridge);
-                    assert removed;
+                    int removedBridges = 0;
+
+                    for (final Edge<V> bridge : bridges) {
+                        graphCopy.removeIntersecting(bridge);
+                        removedBridges += graphCopy.removeEdge(bridge) ? 1 : 0;
+                    }
+
+                    if (removedBridges < bridges.size()) {
+                        logNode("splitting by bridges is impossible: bridges intersect each other", true, depth, index);
+                        return Optional.empty();
+                    }
+
                     final List<Graph<V>> connectedComponents = graphCopy.getConnectedComponents();
 
-                    if (connectedComponents.size() == 2) {
-                        logNode("splitting by bridge", false, depth, index);
+                    if (connectedComponents.size() == bridges.size() + 1) {
+                        logNode("splitting by bridges", false, depth, index);
 
-                        final List<SearchTreeNode> tasks = ImmutableList.of(
-                                new SearchTreeNode(
+                        final List<SearchTreeNode> tasks = IntStream.rangeClosed(0, bridges.size())
+                                .mapToObj(i -> new SearchTreeNode(
                                         nodesCreated, nodesProcessed,
-                                        depth + 1, index + "o",
-                                        connectedComponents.get(0),
-                                        fixed.filter(connectedComponents.get(0).getVertices())),
-                                new SearchTreeNode(
-                                        nodesCreated, nodesProcessed,
-                                        depth + 1, index + "t",
-                                        connectedComponents.get(1),
-                                        fixed.filter(connectedComponents.get(1).getVertices())));
+                                        depth + 1, index + "b" + (i + 1),
+                                        connectedComponents.get(i),
+                                        fixed.filter(connectedComponents.get(i).getVertices())))
+                                .collect(ImmutableList.toImmutableList());
 
                         final List<Graph<V>> subTrees = invokeAll(tasks).stream()
                                 .map(SearchTreeNode::join)
@@ -112,8 +120,8 @@ public final class NcstAlgorithmImpl<V> extends BaseSearchTreeAlgorithm implemen
                                 .map(Optional::get)
                                 .collect(Collectors.toList());
 
-                        if (subTrees.size() == 2) {
-                            final Graph<V> tree = UndirectedGraphWithIntersections.of(Collections.singleton(bridge));
+                        if (subTrees.size() == bridges.size() + 1) {
+                            final Graph<V> tree = UndirectedGraphWithIntersections.of(bridges);
 
                             for (final Graph<V> subTree : subTrees) {
                                 subTree.getEdges()
@@ -124,10 +132,14 @@ public final class NcstAlgorithmImpl<V> extends BaseSearchTreeAlgorithm implemen
                         } else {
                             return Optional.empty();
                         }
-                    } else if (connectedComponents.size() > 2) {
-                        logNode("splitting by bridge is impossible: too many connected components", true, depth, index);
+                    } else if (connectedComponents.size() > bridges.size() + 1) {
+                        logNode(
+                                "splitting by bridges is impossible: too many connected components",
+                                true, depth, index);
+
                         return Optional.empty();
                     } else {
+                        // should never happen
                         throw new RuntimeException();
                     }
                 } else {

@@ -66,7 +66,7 @@ public interface Graph<V> extends Cloneable {
 
     @NotNull @Immutable List<Graph<V>> getConnectedComponents();
 
-    @NotNull Optional<Edge<V>> findBridge();
+    @NotNull @Immutable List<Edge<V>> findBridges();
 
     @NotNull Graph<V> copy();
 }

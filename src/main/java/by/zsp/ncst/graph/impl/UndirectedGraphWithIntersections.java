@@ -312,21 +312,27 @@ public class UndirectedGraphWithIntersections<V> implements Graph<V> {
     }
 
     @Override
-    public @NotNull Optional<Edge<V>> findBridge() {
+    public @NotNull @Immutable List<Edge<V>> findBridges() {
         if (!vertices.isEmpty()) {
-            return bridgeDfs(
+            final List<Edge<V>> bridges = new ArrayList<>();
+
+            bridgeDfs(
+                    bridges,
                     new MutableInt(0),
                     vertices.iterator().next(),
                     null,
                     new HashSet<>(),
                     new HashMap<>(),
                     new HashMap<>());
+
+            return Collections.unmodifiableList(bridges);
         } else {
-            return Optional.empty();
+            return Collections.emptyList();
         }
     }
 
-    private @NotNull Optional<Edge<V>> bridgeDfs(
+    private void bridgeDfs(
+            final @NotNull List<Edge<V>> bridges,
             final @NotNull MutableInt time,
             final @NotNull Vertex<V> visiting,
             final @Nullable Vertex<V> parent,
@@ -344,22 +350,15 @@ public class UndirectedGraphWithIntersections<V> implements Graph<V> {
                 if (visited.contains(child)) {
                     upTime.put(visiting, Math.min(upTime.get(visiting), inTime.get(child)));
                 } else {
-                    final Optional<Edge<V>> bridge = bridgeDfs(time, child, visiting, visited, inTime, upTime);
+                    bridgeDfs(bridges, time, child, visiting, visited, inTime, upTime);
+                    upTime.put(visiting, Math.min(upTime.get(visiting), upTime.get(child)));
 
-                    if (bridge.isPresent()) {
-                        return bridge;
-                    } else {
-                        upTime.put(visiting, Math.min(upTime.get(visiting), upTime.get(child)));
-
-                        if (upTime.get(child) > inTime.get(visiting)) {
-                            return Optional.of(edgeOf(visiting, child));
-                        }
+                    if (upTime.get(child) > inTime.get(visiting)) {
+                        bridges.add(edgeOf(visiting, child));
                     }
                 }
             }
         }
-
-        return Optional.empty();
     }
 
     @Override

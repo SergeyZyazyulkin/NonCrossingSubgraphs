@@ -30,20 +30,29 @@ public class BaseSearchTreeAlgorithm {
                 try {
                     ncst = executionTask.get(1, TimeUnit.SECONDS);
                 } catch (final TimeoutException e) {
-                    final int processed = nodesProcessed.get();
-                    final int created = nodesCreated.get();
-
-                    System.out.println(String.format(
-                            "%d created / %d processed / %d left", created, processed, created - processed));
+                    logProcessing(nodesCreated, nodesProcessed);
                 } catch (final Exception e) {
                     throw new AlgorithmException(e);
                 }
             } while (ncst == null);
+
+            logProcessing(nodesCreated, nodesProcessed);
         } finally {
             pool.shutdown();
         }
 
         return ncst;
+    }
+
+    private static void logProcessing(
+            final @NotNull AtomicInteger nodesCreated,
+            final @NotNull AtomicInteger nodesProcessed) {
+
+        final int processed = nodesProcessed.get();
+        final int created = nodesCreated.get();
+
+        System.out.println(String.format(
+                "%d created / %d processed / %d left", created, processed, created - processed));
     }
 
     protected static void logNode(
