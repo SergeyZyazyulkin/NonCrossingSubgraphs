@@ -1,6 +1,7 @@
 package by.zsp.ncst.util;
 
 import by.zsp.ncst.graph.Edge;
+import by.zsp.ncst.graph.Vertex;
 import by.zsp.ncst.util.annotation.Immutable;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.triangulate.Segment;
@@ -20,5 +21,9 @@ public class Geometry {
                 !intersection.equals2D(segment1.getEnd()) &&
                 !intersection.equals2D(segment2.getStart()) &&
                 !intersection.equals2D(segment2.getEnd());
+    }
+
+    public static double distance(final @NotNull Vertex<?> v1, final @NotNull Vertex<?> v2) {
+        return v1.getCoordinates().distance(v2.getCoordinates());
     }
 }

@@ -23,9 +23,12 @@ public final class BncfAlgorithmImpl<V> extends BaseSearchTreeAlgorithm implemen
     @Override
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     public @NotNull Graph<V> findBncf(final @NotNull Graph<V> graph) throws AlgorithmException {
-        return find((nodesCreated, nodesProcessed) ->
+        final Graph<V> bncf = find((nodesCreated, nodesProcessed) ->
                 new SearchTreeNode(nodesCreated, nodesProcessed, graph, new IndependentSet<>()))
                 .get();
+
+        graph.getVertices().forEach(bncf::addVertex);
+        return bncf;
     }
 
     private final class SearchTreeNode extends BaseSearchTreeNode<V> {

@@ -4,14 +4,20 @@ import by.zsp.ncst.NcstAlgorithm;
 import by.zsp.ncst.graph.Graph;
 import by.zsp.ncst.graph.impl.UndirectedGraphWithIntersections;
 import by.zsp.ncst.impl.NcstAlgorithmImpl;
+import by.zsp.ncst.util.Visualizer;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.util.Optional;
 
 public class NcstAlgorithmTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     private @NotNull Graph<Integer> graph;
     private @NotNull NcstAlgorithm<Integer> ncstAlgorithm;
@@ -137,36 +143,45 @@ public class NcstAlgorithmTest {
 
     @Test
     public void testRandomGraph() {
-        TestUtils.generateRandomGraph(graph, 30, 150);
+        TestUtils.generateRandomGraph(graph, 40, 120);
         test();
     }
 
     private void test() {
-        System.out.println("Intersection index: " + graph.getIntersectionIndex());
+        test(null);
+    }
+
+    private void test(final Boolean hasNcst) {
         final Optional<Graph<Integer>> optionalNcst = ncstAlgorithm.findNcst(graph);
-        System.out.println(optionalNcst.isPresent());
+
+        if (optionalNcst.isPresent()) {
+            visualize(optionalNcst.get());
+        } else {
+            visualize(graph);
+        }
+
+        if (hasNcst != null) {
+            Assert.assertEquals(hasNcst, optionalNcst.isPresent());
+        } else {
+            System.out.println(optionalNcst.isPresent());
+        }
 
         if (optionalNcst.isPresent()) {
             check(optionalNcst);
         }
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    private void test(final boolean hasNcst) {
-        final Optional<Graph<Integer>> optionalNcst = ncstAlgorithm.findNcst(graph);
-        Assert.assertEquals(hasNcst, optionalNcst.isPresent());
-
-        if (hasNcst) {
-            check(optionalNcst);
-        }
-    }
-
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalGetWithoutIsPresent" })
     private void check(final @NotNull Optional<Graph<Integer>> optionalNcst) {
         final Graph<Integer> ncst = optionalNcst.get();
         Assert.assertEquals(graph.getVerticesNumber(), ncst.getVerticesNumber());
         Assert.assertEquals(Math.max(graph.getVerticesNumber() - 1, 0), ncst.getEdgesNumber());
         Assert.assertTrue(ncst.isConnected());
         Assert.assertFalse(ncst.isIntersecting());
+    }
+
+    private void visualize(final @NotNull Graph<?> result) {
+        Visualizer.visualize("ncst_" + testName.getMethodName() + "_graph", graph);
+        Visualizer.visualize("ncst_" + testName.getMethodName() + "_ncst", result);
     }
 }

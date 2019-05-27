@@ -4,12 +4,18 @@ import by.zsp.ncst.BncfAlgorithm;
 import by.zsp.ncst.graph.Graph;
 import by.zsp.ncst.graph.impl.UndirectedGraphWithIntersections;
 import by.zsp.ncst.impl.BncfAlgorithmImpl;
+import by.zsp.ncst.util.Visualizer;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 public class BncfAlgorithmTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     private @NotNull Graph<Integer> graph;
     private @NotNull BncfAlgorithm<Integer> bncfAlgorithm;
@@ -135,20 +141,28 @@ public class BncfAlgorithmTest {
 
     @Test
     public void testRandomGraph() {
-        TestUtils.generateRandomGraph(graph, 40, 100);
+        TestUtils.generateRandomGraph(graph, 40, 120);
         test();
     }
 
     private void test() {
-        System.out.println("Intersection index: " + graph.getIntersectionIndex());
-        final Graph<Integer> bncsg = bncfAlgorithm.findBncf(graph);
-        Assert.assertFalse(bncsg.isIntersecting());
-        System.out.println("BNCSG size: " + bncsg.getEdgesNumber());
+        test(null);
     }
 
-    private void test(final int size) {
-        final Graph<Integer> bncsg = bncfAlgorithm.findBncf(graph);
-        Assert.assertFalse(bncsg.isIntersecting());
-        Assert.assertEquals(size, bncsg.getEdgesNumber());
+    private void test(final Integer size) {
+        final Graph<Integer> bncf = bncfAlgorithm.findBncf(graph);
+        visualize(bncf);
+        Assert.assertFalse(bncf.isIntersecting());
+
+        if (size != null) {
+            Assert.assertEquals(size.intValue(), bncf.getEdgesNumber());
+        } else {
+            System.out.println("BNCSG size: " + bncf.getEdgesNumber());
+        }
+    }
+
+    private void visualize(final @NotNull Graph<?> result) {
+        Visualizer.visualize("bncf_" + testName.getMethodName() + "_graph", graph);
+        Visualizer.visualize("bncf_" + testName.getMethodName() + "_bncf", result);
     }
 }
