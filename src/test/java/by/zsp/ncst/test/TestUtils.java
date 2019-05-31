@@ -15,7 +15,7 @@ public final class TestUtils {
 
     private static final double MIN_COORD = 0;
     private static final double MAX_COORD = 1;
-    private static final double MAX_EDGE_LENGTH_SCALING = 10;
+    private static final double MAX_EDGE_LENGTH_SCALING = 3;
     private static final int MAX_GENERATION_ATTEMPTS = 1000;
 
     private TestUtils () {}

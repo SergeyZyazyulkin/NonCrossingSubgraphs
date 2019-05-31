@@ -143,7 +143,7 @@ public class NcstAlgorithmTest {
 
     @Test
     public void testRandomGraph() {
-        TestUtils.generateRandomGraph(graph, 40, 120);
+        TestUtils.generateRandomGraph(graph, 20, 200);
         test();
     }
 
@@ -152,6 +152,7 @@ public class NcstAlgorithmTest {
     }
 
     private void test(final Boolean hasNcst) {
+        System.out.println(graph);
         final Optional<Graph<Integer>> optionalNcst = ncstAlgorithm.findNcst(graph);
 
         if (optionalNcst.isPresent()) {

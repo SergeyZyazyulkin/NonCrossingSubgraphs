@@ -365,4 +365,11 @@ public class UndirectedGraphWithIntersections<V> implements Graph<V> {
     public @NotNull Graph<V> copy() {
         return new UndirectedGraphWithIntersections<>(vertices, edges, adjacency, intersections);
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "n = %d%nm = %d%nintersection index = %d%nintersections number = %d",
+                getVerticesNumber(), getEdgesNumber(), getIntersectionIndex(), intersections.size() / 2);
+    }
 }

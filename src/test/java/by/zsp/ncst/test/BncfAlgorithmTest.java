@@ -141,7 +141,7 @@ public class BncfAlgorithmTest {
 
     @Test
     public void testRandomGraph() {
-        TestUtils.generateRandomGraph(graph, 40, 120);
+        TestUtils.generateRandomGraph(graph, 40, 150);
         test();
     }
 
@@ -150,6 +150,7 @@ public class BncfAlgorithmTest {
     }
 
     private void test(final Integer size) {
+        System.out.println(graph);
         final Graph<Integer> bncf = bncfAlgorithm.findBncf(graph);
         visualize(bncf);
         Assert.assertFalse(bncf.isIntersecting());

@@ -70,8 +70,11 @@ public class Visualizer {
                 null, "x", "y", xySeriesCollection, PlotOrientation.VERTICAL, false, false, false);
 
         final XYPlot plot = chart.getXYPlot();
+        plot.setBackgroundAlpha(0);
         plot.getDomainAxis().setRange(minX - 0.1 * xSize, maxX + 0.1 * xSize);
+        plot.getDomainAxis().setVisible(false);
         plot.getRangeAxis().setRange(minY - 0.1 * ySize, maxY + 0.1 * ySize);
+        plot.getRangeAxis().setVisible(false);
 
         final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 
