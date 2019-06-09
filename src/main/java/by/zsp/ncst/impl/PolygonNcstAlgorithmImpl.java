@@ -9,6 +9,7 @@ import by.zsp.ncst.graph.impl.UndirectedGraphWithIntersections;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,6 +77,7 @@ public class PolygonNcstAlgorithmImpl<V> implements PolygonNcstAlgorithm<V> {
 
         final GeometryFactory geometryFactory = new GeometryFactory();
         final LinearRing ring = geometryFactory.createLinearRing(coordinates);
+        final Polygon geomPolygon = geometryFactory.createPolygon(ring);
 
         final List<Vertex<V>> vertices = new ArrayList<>(graph.getVertices());
         final Set<Edge<V>> edges = new HashSet<>();
@@ -87,7 +89,7 @@ public class PolygonNcstAlgorithmImpl<V> implements PolygonNcstAlgorithm<V> {
         }
 
         return edges.stream()
-                .filter(edge -> !ring.covers(geometryFactory.createLineString(edge.asCoordinates())))
+                .filter(edge -> !geomPolygon.covers(geometryFactory.createLineString(edge.asCoordinates())))
                 .collect(Collectors.toSet());
     }
 
@@ -96,7 +98,7 @@ public class PolygonNcstAlgorithmImpl<V> implements PolygonNcstAlgorithm<V> {
 
         final NcstState[][] ncstTable = new NcstState[polygon.size()][polygon.size()];
 
-        for (int i = polygon.size() - 2; i >= 0; ++i) {
+        for (int i = polygon.size() - 2; i >= 0; --i) {
             ncstTable[i][i + 1] = graph.getEdges().contains(graph.edgeOf(polygon.get(i), polygon.get(i + 1)))
                     ? NcstState.NCST
                     : NcstState.FOREST;
@@ -131,8 +133,10 @@ public class PolygonNcstAlgorithmImpl<V> implements PolygonNcstAlgorithm<V> {
             final int from,
             final int to) {
 
-        if (from + 1 == to && graph.getEdges().contains(graph.edgeOf(polygon.get(from), polygon.get(to)))) {
-            ncstEdges.add(graph.edgeOf(polygon.get(from), polygon.get(to)));
+        if (from + 1 == to) {
+            if (graph.getEdges().contains(graph.edgeOf(polygon.get(from), polygon.get(to)))) {
+                ncstEdges.add(graph.edgeOf(polygon.get(from), polygon.get(to)));
+            }
         } else {
             final ImmutablePair<Integer, NcstState> bestSplit = findBestSplit(graph, polygon, ncstTable, from, to);
 

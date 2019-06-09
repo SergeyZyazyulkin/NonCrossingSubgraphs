@@ -1,9 +1,10 @@
 package by.zsp.ncst.test;
 
-import by.zsp.ncst.NcstAlgorithm;
+import by.zsp.ncst.PolygonNcstAlgorithm;
 import by.zsp.ncst.graph.Graph;
+import by.zsp.ncst.graph.Vertex;
 import by.zsp.ncst.graph.impl.UndirectedGraphWithIntersections;
-import by.zsp.ncst.impl.NcstAlgorithmImpl;
+import by.zsp.ncst.impl.PolygonNcstAlgorithmImpl;
 import by.zsp.ncst.util.Visualizer;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
@@ -12,20 +13,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-public class NcstAlgorithmTest {
+public class PolygonNcstAlgorithmTest {
 
     @Rule
     public TestName testName = new TestName();
 
     private @NotNull Graph<Integer> graph;
-    private @NotNull NcstAlgorithm<Integer> ncstAlgorithm;
+    private @NotNull List<Vertex<Integer>> polygon;
+    private @NotNull PolygonNcstAlgorithm<Integer> ncstAlgorithm;
 
     @Before
     public void init() {
         graph = new UndirectedGraphWithIntersections<>();
-        ncstAlgorithm = new NcstAlgorithmImpl<>();
+        polygon = new ArrayList<>();
+        ncstAlgorithm = new PolygonNcstAlgorithmImpl<>();
     }
 
     @Test
@@ -36,31 +41,34 @@ public class NcstAlgorithmTest {
     @Test
     public void testSingleVertex() {
         graph.addVertex(1, 1, 1);
+        polygon.add(graph.vertexOf(1, 1, 1));
         test(true);
     }
 
     @Test
     public void testNotConnected() {
         graph.addEdge(1, 1, 1, 2, 2, 2);
-        graph.addVertex(3, 3, 3);
+        graph.addVertex(3, 3, 2);
+
+        polygon.add(graph.vertexOf(1, 1, 1));
+        polygon.add(graph.vertexOf(2, 2, 2));
+        polygon.add(graph.vertexOf(3, 3, 2));
+
         test(false);
     }
 
     @Test
-    public void testStar() {
-        graph.addEdge(1, 0, 0, 2, -1, 0);
-        graph.addEdge(1, 0, 0, 3, 0, 1);
-        graph.addEdge(1, 0, 0, 4, 1, 0);
-        graph.addEdge(1, 0, 0, 5, 0, -1);
-        test(true);
-    }
+    public void testDiamond() {
+        graph.addEdge(1, -1, 0, 2, 0, 1);
+        graph.addEdge(2, 0, 1, 3, 1, 0);
+        graph.addEdge(3, 1, 0, 4, 0, -1);
+        graph.addEdge(4, 0, -1, 1, -1, 0);
 
-    @Test
-    public void testCycle() {
-        graph.addEdge(1, -1, -1, 2, -1, 1);
-        graph.addEdge(2, -1, 1, 3, 1, 1);
-        graph.addEdge(3, 1, 1, 4, 1, -1);
-        graph.addEdge(4, 1, -1, 1, -1, -1);
+        polygon.add(graph.vertexOf(1, -1, 0));
+        polygon.add(graph.vertexOf(2, 0, 1));
+        polygon.add(graph.vertexOf(3, 1, 0));
+        polygon.add(graph.vertexOf(4, 0, -1));
+
         test(true);
     }
 
@@ -70,6 +78,13 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, 0, 1, 3, 1, 0);
         graph.addEdge(3, 1, 0, 4, 1, 1);
         graph.addEdge(4, 1, 1, 5, 2, 1);
+
+        polygon.add(graph.vertexOf(1, 0, 0));
+        polygon.add(graph.vertexOf(2, 0, 1));
+        polygon.add(graph.vertexOf(4, 1, 1));
+        polygon.add(graph.vertexOf(5, 2, 1));
+        polygon.add(graph.vertexOf(3, 1, 0));
+
         test(false);
     }
 
@@ -80,6 +95,13 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, 0, 1, 3, 1, 0);
         graph.addEdge(3, 1, 0, 4, 1, 1);
         graph.addEdge(4, 1, 1, 5, 2, 1);
+
+        polygon.add(graph.vertexOf(1, 0, 0));
+        polygon.add(graph.vertexOf(2, 0, 1));
+        polygon.add(graph.vertexOf(4, 1, 1));
+        polygon.add(graph.vertexOf(5, 2, 1));
+        polygon.add(graph.vertexOf(3, 1, 0));
+
         test(true);
     }
 
@@ -90,6 +112,13 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, 0, 1, 3, 1, 0);
         graph.addEdge(3, 1, 0, 4, 1, 1);
         graph.addEdge(4, 1, 1, 5, 2, 1);
+
+        polygon.add(graph.vertexOf(1, 0, 0));
+        polygon.add(graph.vertexOf(2, 0, 1));
+        polygon.add(graph.vertexOf(4, 1, 1));
+        polygon.add(graph.vertexOf(5, 2, 1));
+        polygon.add(graph.vertexOf(3, 1, 0));
+
         test(false);
     }
 
@@ -101,6 +130,13 @@ public class NcstAlgorithmTest {
         graph.addEdge(2, 0, 1, 3, 1, 0);
         graph.addEdge(3, 1, 0, 4, 1, 1);
         graph.addEdge(4, 1, 1, 5, 2, 1);
+
+        polygon.add(graph.vertexOf(1, 0, 0));
+        polygon.add(graph.vertexOf(2, 0, 1));
+        polygon.add(graph.vertexOf(4, 1, 1));
+        polygon.add(graph.vertexOf(5, 2, 1));
+        polygon.add(graph.vertexOf(3, 1, 0));
+
         test(true);
     }
 
@@ -120,6 +156,21 @@ public class NcstAlgorithmTest {
         graph.addEdge(8, 4, 2, 9, 4, -2);
         graph.addEdge(9, 4, -2, 10, 5, -2);
         graph.addEdge(10, 5, -2, 2, 5, 0);
+
+        polygon.add(graph.vertexOf(0, 0, 0));
+        polygon.add(graph.vertexOf(4, 1, 2));
+        polygon.add(graph.vertexOf(3, 2, 2));
+        polygon.add(graph.vertexOf(1, 2, 0));
+        polygon.add(graph.vertexOf(8, 4, 2));
+        polygon.add(graph.vertexOf(7, 5, 2));
+        polygon.add(graph.vertexOf(2, 5, 0));
+        polygon.add(graph.vertexOf(10, 5, -2));
+        polygon.add(graph.vertexOf(9, 4, -2));
+        polygon.add(graph.vertexOf(11, 2, -1));
+        polygon.add(graph.vertexOf(6, 2, -2));
+        polygon.add(graph.vertexOf(5, 1, -2));
+        polygon.add(graph.vertexOf(12, 0, -1));
+
         test(true);
     }
 
@@ -138,22 +189,27 @@ public class NcstAlgorithmTest {
         graph.addEdge(8, 4, 2, 9, 4, -2);
         graph.addEdge(9, 4, -2, 10, 5, -2);
         graph.addEdge(10, 5, -2, 2, 5, 0);
+
+        polygon.add(graph.vertexOf(0, 0, 0));
+        polygon.add(graph.vertexOf(4, 1, 2));
+        polygon.add(graph.vertexOf(3, 2, 2));
+        polygon.add(graph.vertexOf(1, 2, 0));
+        polygon.add(graph.vertexOf(8, 4, 2));
+        polygon.add(graph.vertexOf(7, 5, 2));
+        polygon.add(graph.vertexOf(2, 5, 0));
+        polygon.add(graph.vertexOf(10, 5, -2));
+        polygon.add(graph.vertexOf(9, 4, -2));
+        polygon.add(graph.vertexOf(11, 2, -1));
+        polygon.add(graph.vertexOf(6, 2, -2));
+        polygon.add(graph.vertexOf(5, 1, -2));
+        polygon.add(graph.vertexOf(12, 0, -1));
+
         test(false);
-    }
-
-    @Test
-    public void testRandomGraph() {
-        TestUtils.generateRandomGraph(graph, 20, 200);
-        test();
-    }
-
-    private void test() {
-        test(null);
     }
 
     private void test(final Boolean hasNcst) {
         System.out.println(graph);
-        final Optional<Graph<Integer>> optionalNcst = ncstAlgorithm.findNcst(graph);
+        final Optional<Graph<Integer>> optionalNcst = ncstAlgorithm.findNcst(graph, polygon);
 
         if (optionalNcst.isPresent()) {
             visualize(optionalNcst.get());
@@ -178,7 +234,7 @@ public class NcstAlgorithmTest {
     }
 
     private void visualize(final @NotNull Graph<?> result) {
-        Visualizer.visualize("ncst_" + testName.getMethodName() + "_graph", graph);
-        Visualizer.visualize("ncst_" + testName.getMethodName() + "_ncst", result);
+        Visualizer.visualize("polygon_ncst_" + testName.getMethodName() + "_graph", graph);
+        Visualizer.visualize("polygon_ncst_" + testName.getMethodName() + "_ncst", result);
     }
 }

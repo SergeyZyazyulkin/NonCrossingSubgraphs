@@ -15,7 +15,7 @@ import org.junit.Test;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class BaseMatroidIntersectionAlgorithmTest {
+public class MatroidIntersectionAlgorithmTest {
 
     @Test
     public void oneVertex() {
