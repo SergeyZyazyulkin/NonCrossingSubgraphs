@@ -207,6 +207,16 @@ public class PolygonNcstAlgorithmTest {
         test(false);
     }
 
+    @Test
+    public void testRandomGraph() {
+        TestUtils.generateRandomPolygonGraph(graph, polygon, 2000);
+        test();
+    }
+
+    private void test() {
+        test(null);
+    }
+
     private void test(final Boolean hasNcst) {
         System.out.println(graph);
         final Optional<Graph<Integer>> optionalNcst = ncstAlgorithm.findNcst(graph, polygon);
