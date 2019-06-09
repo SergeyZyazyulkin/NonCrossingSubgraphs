@@ -2,6 +2,7 @@ package by.zsp.ncst.graph;
 
 import by.zsp.ncst.util.annotation.Immutable;
 import com.google.common.collect.Lists;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.triangulate.Segment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
@@ -24,5 +25,10 @@ public interface Edge<V> {
     default @NotNull Stream<Vertex<V>> asStream() {
         final ImmutablePair<Vertex<V>, Vertex<V>> vertices = asVerticesPair();
         return Lists.newArrayList(vertices.left, vertices.right).stream();
+    }
+
+    default @NotNull Coordinate[] asCoordinates() {
+        final ImmutablePair<Vertex<V>, Vertex<V>> vertices = asVerticesPair();
+        return new Coordinate[] { vertices.left.getCoordinates(), vertices.right.getCoordinates() };
     }
 }
