@@ -1,9 +1,15 @@
-package by.zsp.ncst;
+package by.zsp.ncst.test;
 
+import by.zsp.ncst.NcstAlgorithm;
+import by.zsp.ncst.PolygonNcstAlgorithm;
+import by.zsp.ncst.graph.Graph;
 import by.zsp.ncst.graph.Vertex;
 import by.zsp.ncst.graph.impl.UndirectedGraphWithIntersections;
+import by.zsp.ncst.impl.NcstAlgorithmImpl;
+import by.zsp.ncst.impl.PolygonNcstAlgorithmImpl;
 import by.zsp.ncst.util.Visualizer;
 import com.google.common.io.Files;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 import org.jfree.chart.ChartFactory;
@@ -20,13 +26,15 @@ import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 public class Test {
 
     public static void main(final @NotNull String[] args) {
-        drawConcaveGeometricGraph();
+        compareAlgorithms();
     }
 
     private static void drawGraphWithIntersectionMatroid() {
@@ -51,6 +59,31 @@ public class Test {
         g.addEdge(4, 5, 2, 2, 6, 0);
         g.addEdge(6, 7, 4, 9, 3, -2);
         Visualizer.visualize("graph_with_intersection_index_1", g);
+    }
+
+    private static void compareAlgorithms() {
+        final Graph<Integer> g = new UndirectedGraphWithIntersections<>();
+        final List<Vertex<Integer>> p = new ArrayList<>();
+        TestUtils.generateRandomPolygonGraph(g, p, 20, 300);
+        Visualizer.visualize("concave_graph", g);
+        System.out.println(g);
+
+        final PolygonNcstAlgorithm<Integer> polygonNcst = new PolygonNcstAlgorithmImpl<>();
+        final NcstAlgorithm<Integer> searchTreeNcst = new NcstAlgorithmImpl<>();
+        final StopWatch stopWatch = new StopWatch();
+
+        stopWatch.start();
+        final Optional<Graph<Integer>> ncst1 = polygonNcst.findNcst(g, p);
+        stopWatch.stop();
+        ncst1.ifPresent(ncst -> Visualizer.visualize("concave_ncst_1", ncst));
+        System.out.println("Polygon NCST Algorithm: " + stopWatch.getTime() + " ms");
+
+        stopWatch.reset();
+        stopWatch.start();
+        final Optional<Graph<Integer>> ncst2 = searchTreeNcst.findNcst(g);
+        stopWatch.stop();
+        ncst2.ifPresent(ncst -> Visualizer.visualize("concave_ncst_2", ncst));
+        System.out.println("Search Tree NCST Algorithm: " + stopWatch.getTime() + " ms");
     }
 
     private static void drawConcaveGeometricGraph() {

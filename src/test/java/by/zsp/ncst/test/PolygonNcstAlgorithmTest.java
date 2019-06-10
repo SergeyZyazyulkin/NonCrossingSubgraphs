@@ -209,7 +209,7 @@ public class PolygonNcstAlgorithmTest {
 
     @Test
     public void testRandomGraph() {
-        TestUtils.generateRandomPolygonGraph(graph, polygon, 2000);
+        TestUtils.generateRandomPolygonGraph(graph, polygon, 100, 2000);
         test();
     }
 

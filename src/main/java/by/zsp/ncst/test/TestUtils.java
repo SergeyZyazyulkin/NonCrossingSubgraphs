@@ -9,7 +9,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ public final class TestUtils {
     private static final double MAX_EDGE_LENGTH_SCALING = 3;
     private static final int MAX_GENERATION_ATTEMPTS = 1000;
 
-    private TestUtils () {}
+    private TestUtils() {}
 
     static void generateRandomGraph(
             final @NotNull Graph<Integer> graph, final int verticesNumber, final int edgesNumber) {
@@ -56,47 +55,64 @@ public final class TestUtils {
     }
 
     static void generateRandomPolygonGraph(
-            final @NotNull Graph<Integer> graph, final @NotNull List<Vertex<Integer>> polygon, final int edgesNumber) {
+            final @NotNull Graph<Integer> graph, final @NotNull List<Vertex<Integer>> polygon,
+            final int verticesNumber, final int edgesNumber) {
+
+        assert verticesNumber > 1;
+        assert verticesNumber % 4 == 0;
+        assert edgesNumber > 0;
+
+        final int verticesQuarter = verticesNumber / 4;
+        final double scale = 10.0 / verticesQuarter / (verticesQuarter - 1);
 
         polygon.add(graph.vertexOf(0, 0, 0));
         Coordinate previousCoordinates = polygon.get(0).getCoordinates();
 
-        for (int i = 1; i < 25; ++i) {
-            final Vertex<Integer> currentVertex =
-                    graph.vertexOf(i, previousCoordinates.x + i * 0.01, previousCoordinates.y + (25 - i) * 0.01);
+
+        for (int i = 1; i < verticesQuarter; ++i) {
+            final Vertex<Integer> currentVertex = graph.vertexOf(
+                    i,
+                    previousCoordinates.x + i * scale,
+                    previousCoordinates.y + (verticesQuarter - i) * scale);
 
             polygon.add(currentVertex);
             previousCoordinates = currentVertex.getCoordinates();
         }
 
-        polygon.add(graph.vertexOf(25, 4, 3));
-        previousCoordinates = polygon.get(25).getCoordinates();
+        polygon.add(graph.vertexOf(verticesQuarter, 6, 5));
+        previousCoordinates = polygon.get(verticesQuarter).getCoordinates();
 
-        for (int i = 1; i < 25; ++i) {
-            final Vertex<Integer> currentVertex =
-                    graph.vertexOf(25 + i, previousCoordinates.x + i * 0.01, previousCoordinates.y - (25 - i) * 0.01);
-
-            polygon.add(currentVertex);
-            previousCoordinates = currentVertex.getCoordinates();
-        }
-
-        polygon.add(graph.vertexOf(50, 7, -1));
-        previousCoordinates = polygon.get(50).getCoordinates();
-
-        for (int i = 1; i < 25; ++i) {
-            final Vertex<Integer> currentVertex =
-                    graph.vertexOf(50 + i, previousCoordinates.x - i * 0.01, previousCoordinates.y - (25 - i) * 0.01);
+        for (int i = 1; i < verticesQuarter; ++i) {
+            final Vertex<Integer> currentVertex = graph.vertexOf(
+                    verticesQuarter + i,
+                    previousCoordinates.x + i * scale,
+                    previousCoordinates.y - (verticesQuarter - i) * scale);
 
             polygon.add(currentVertex);
             previousCoordinates = currentVertex.getCoordinates();
         }
 
-        polygon.add(graph.vertexOf(75, 3, -4));
-        previousCoordinates = polygon.get(75).getCoordinates();
+        polygon.add(graph.vertexOf(2 * verticesQuarter, 11, -1));
+        previousCoordinates = polygon.get(2 * verticesQuarter).getCoordinates();
 
-        for (int i = 1; i < 25; ++i) {
-            final Vertex<Integer> currentVertex =
-                    graph.vertexOf(75 + i, previousCoordinates.x - i * 0.01, previousCoordinates.y + (25 - i) * 0.01);
+        for (int i = 1; i < verticesQuarter; ++i) {
+            final Vertex<Integer> currentVertex = graph.vertexOf(
+                    2 * verticesQuarter + i,
+                    previousCoordinates.x - i * scale,
+                    previousCoordinates.y - (verticesQuarter - i) * scale);
+
+            polygon.add(currentVertex);
+            previousCoordinates = currentVertex.getCoordinates();
+        }
+
+        polygon.add(graph.vertexOf(3 * verticesQuarter, 5, -6));
+        previousCoordinates = polygon.get(3 * verticesQuarter).getCoordinates();
+
+        for (int i = 1; i < verticesQuarter; ++i) {
+            final Vertex<Integer> currentVertex = graph.vertexOf(
+                    3 * verticesQuarter + i,
+                    previousCoordinates.x - i * scale,
+                    previousCoordinates.y + (verticesQuarter - i) * scale);
 
             polygon.add(currentVertex);
             previousCoordinates = currentVertex.getCoordinates();
@@ -115,13 +131,13 @@ public final class TestUtils {
 
         final List<Edge<Integer>> edges = IntStream.range(0, edgesNumber)
                 .mapToObj(i -> {
-                    final int first = RandomUtils.nextInt(0, 100);
+                    final int first = RandomUtils.nextInt(0, verticesNumber);
                     int second;
                     Edge<Integer> edge;
                     int attempts = 0;
 
                     do {
-                        second = RandomUtils.nextInt(0, 100);
+                        second = RandomUtils.nextInt(0, verticesNumber);
                         edge = graph.edgeOf(polygon.get(first), polygon.get(second));
                         attempts++;
                     } while (second == first || (attempts < MAX_GENERATION_ATTEMPTS &&
